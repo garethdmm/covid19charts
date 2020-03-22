@@ -1,0 +1,157 @@
+<!DOCTYPE html> <html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://ogp.me/ns#"
+  xmlns:fb="http://www.facebook.com/2008/fbml"> <head> <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style type = 'text/css'>
+      html, body {
+        height: 100%;
+      }
+
+      #title-row {
+        height: 10%;
+      }
+
+      #graph-row {
+        height: 90%;
+      }
+
+      #graph-container {
+        background: url('http://www.theblog.ca/wp-content/uploads/2006/11/bigmapofcanada.png') center no-repeat;
+        background-size: 50%;
+      }
+  
+      #graph { opacity: 0.9; }
+
+      label.btn { cursor: pointer; }
+    </style>
+
+    <title>C-19 Ontario</title>
+
+    <script
+      src="http://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script type='text/javascript' src='js/jquery.flot.js'></script>
+    <script type='text/javascript' src='js/jquery.flot.time.js'></script>
+    <script type='text/javascript' src='js/data.js'></script>
+
+    <script type='text/javascript'>
+
+LINEWIDTH = 86400 * 50;
+
+MARCH16 = 1584334800000;
+MARCH18 = 1584507600000;
+
+//var active_series = ['ON', 'BC'];
+
+var series = {
+  'ON': on_per_thousand,
+  'BC': bc_per_thousand,
+  'QC': qc_per_thousand,
+}
+
+markings = [
+  { color: "#000", lineWidth: 1, yaxis: { from: 2, to: 2 } },
+]
+
+plot_config = {
+  xaxis: {
+    mode: 'time',
+    max: '1587441600000',
+  },
+  yaxis: {
+    max: '0.1',
+  },
+  grid: {
+    borderColor: '#eee',
+    borderWidth: 1,
+    hoverable: true,
+    backgroundColor: '#fcfcfc',
+    markings: [
+      //{ yaxis: { from: 0.005, to: 0.01 }, color: "#000000" }
+      { xaxis: { from: MARCH16, to: MARCH16 + LINEWIDTH  }, color: "#000000" },
+      { xaxis: { from: MARCH18, to: MARCH18 + LINEWIDTH  }, color: "#000000" },
+    ]
+  },
+}
+
+var redraw_graph = function() {
+  var plot_data = [];
+
+  active_series = get_active_series();
+
+  for (var i=0; i < active_series.length; i++) {
+    region_name = active_series[i];
+
+    plot_data.push({data: series[region_name], label: region_name});
+  }
+
+  $.plot("#graph", plot_data, plot_config);
+}
+
+var get_active_series = function() {
+  selected_series_buttons = $('button.series-button.selected');
+  selected_series = [];
+
+  for(var i=0; i< selected_series_buttons.length; i++) {
+    selected_series.push(selected_series_buttons[i].id);
+  }
+
+  return selected_series;
+}
+
+$(document).ready(function() {
+  redraw_graph();
+
+  $('button.series-button').click(function() {
+    if ($(this).hasClass('selected')) { 
+      $(this).removeClass('selected');
+      $(this).removeClass('btn-primary');
+      $(this).addClass('btn-outline-primary');
+    } else {
+      $(this).addClass('selected');
+      $(this).removeClass('btn-outline-primary');
+      $(this).addClass('btn-primary');
+    }
+
+    redraw_graph();
+  });
+});
+
+    </script>
+  </head>
+  <body class='d-flex flex-column'>
+    <div class='container-fluid p-5 flex-grow-1'>
+      <div id='title-row' class='row'>
+        <div class='col'>
+          <h3 class='text-center' >Cases per Thousand</h3>
+          <span>Regions</span>
+          <div class='btn-group'>
+            <button type='button' class='btn btn-primary series-button selected' id='ON'>ON</a>
+            <button type='button' class='btn btn-primary series-button selected' id='BC'>BC</a>
+            <button type='button' class='btn btn-primary series-button selected' id='QC'>QC</a>
+          </div>
+          <span>Series type</span>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-primary active">
+              <input type="radio" name="options" id="total" class='series-type-selector' autocomplete="off" checked>Total Cases
+            </label>
+            <label class="btn btn-primary">
+              <input type="radio" name="options" id="thousand" autocomplete="off" class='series-type-selector'>Cases per-thousand
+            </label>
+          </div>
+        </div>
+      </div>
+      <div id='graph-row' class='row'>
+        <div id='graph-container' class='col d-flex flex-grow-1'>
+          <div id='graph' class='flex-grow-1'>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
