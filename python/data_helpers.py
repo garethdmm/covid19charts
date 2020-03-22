@@ -1,4 +1,5 @@
 from delorean import parse
+import pandas as pd
 
 shortcodes = {
     'Alberta': 'AB',
@@ -80,21 +81,44 @@ def get_daily_change_in_region(region):
     return region - region.shift(1, axis=1)
 
 
-def generate_new_data_js(raw_data):
+def generate_new_data_js():
+    raw_data = pd.read_csv('data/current.csv')
+    datajs = generate_new_data_js_string(raw_data)
+    f = open('website/js/data.js', 'w')
+    f.write(datajs)
+    f.close()
+
+
+def generate_new_data_js_string(raw_data):
     data_js = ''
 
     for province in pop.keys():
-        province_data_str = get_new_data_for_province(province, raw_data)
+        province_total_str = generate_new_data_js_string_for_province(
+            province,
+            raw_data,
+        )
 
-        data_js += province_data_str + '\n\n'
+        province_perthousand_str = generate_new_data_js_string_for_province(
+            province,
+            raw_data,
+            per_thousand=True,
+        )
+
+        data_js += province_total_str + '\n\n'
+        data_js += province_perthousand_str + '\n\n'
 
     return data_js
 
 
-def get_new_data_for_province(subregion, raw_data, per_capita=False, per_thousand=False):
+def generate_new_data_js_string_for_province(subregion, raw_data, per_capita=False, per_thousand=False):
     formatted_data = format_data(raw_data)
     canada = get_canada(formatted_data)
     subregion_data = canada.T[subregion]
+
+    variable_name = '%s_total' % shortcodes[subregion].lower()
+
+    if per_thousand:
+        variable_name = '%s_per_thousand' % shortcodes[subregion].lower()
 
     data = ''
 
@@ -109,8 +133,11 @@ def get_new_data_for_province(subregion, raw_data, per_capita=False, per_thousan
 
         data = data + ('\n  [%s,%.5f],' % (int(timestamp.strftime('%s'))*1000, value))
 
-    data = '%s_total = [%s\n];' % (shortcodes[subregion].lower(), data)
+    data = '%s = [%s\n];' % (variable_name, data)
 
-    return data;
+    return data
 
+
+if __name__ == '__main__':
+    generate_new_data_js()
 
