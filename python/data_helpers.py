@@ -1,20 +1,38 @@
 from delorean import parse
 
+shortcodes = {
+    'Alberta': 'AB',
+    'Saskatchewan': 'SK',
+    'Manitoba': 'MB',
+    'British Columbia': 'BC',
+    'Ontario': 'ON',
+    'Quebec': 'QC',
+    'Prince Edward Island': 'PE',
+    'Newfoundland and Labrador': 'NL',
+    'Nova Scotia': 'NS',
+    'New Brunswick': 'NB',
+    'Nunavut': 'NU',
+    'Yukon': 'YK',
+    'Northwest Territories': 'NT',
+}
+
 pop = {
-    'Nunavut': 3594,
     'Alberta': 4067175,
     'Saskatchewan': 1098352,
-    'Yukon': 3587,
     'Manitoba': 1278365,
     'British Columbia': 4648055,
     'Ontario': 13448494,
     'Quebec': 8164361,
     'Prince Edward Island': 142907,
     'Newfoundland and Labrador': 519716,
-    'Northwest Territories': 41786,
     'Nova Scotia': 923598,
     'New Brunswick': 747101,
+    # No data for these presently.
+    #'Nunavut': 3594,
+    #'Yukon': 3587,
+    #'Northwest Territories': 41786,
 }
+
 
 def format_data(raw_data):
     formatted_data = raw_data.drop(columns=[
@@ -57,8 +75,20 @@ def get_canada(raw_data):
 
     return canada
 
+
 def get_daily_change_in_region(region):
     return region - region.shift(1, axis=1)
+
+
+def generate_new_data_js(raw_data):
+    data_js = ''
+
+    for province in pop.keys():
+        province_data_str = get_new_data_for_province(province, raw_data)
+
+        data_js += province_data_str + '\n\n'
+
+    return data_js
 
 
 def get_new_data_for_province(subregion, raw_data, per_capita=False, per_thousand=False):
@@ -66,7 +96,9 @@ def get_new_data_for_province(subregion, raw_data, per_capita=False, per_thousan
     canada = get_canada(formatted_data)
     subregion_data = canada.T[subregion]
 
-    for timestamp, value in canada.T.Quebec.items():
+    data = ''
+
+    for timestamp, value in canada.T[subregion].items():
         formatted_timestamp = str(int(timestamp.strftime('%s'))*1000)
 
         if per_capita is True:
@@ -75,12 +107,10 @@ def get_new_data_for_province(subregion, raw_data, per_capita=False, per_thousan
         if per_thousand is True:
             value = value * 1000 / pop[subregion]
 
-        print('[%s,%.5f],' % (int(timestamp.strftime('%s'))*1000, value))
+        data = data + ('\n  [%s,%.5f],' % (int(timestamp.strftime('%s'))*1000, value))
 
+    data = '%s_total = [%s\n];' % (shortcodes[subregion].lower(), data)
 
-
-
-
-
+    return data;
 
 

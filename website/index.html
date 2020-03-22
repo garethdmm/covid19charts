@@ -19,7 +19,7 @@
       }
 
       #graph-container {
-        background: url('http://www.theblog.ca/wp-content/uploads/2006/11/bigmapofcanada.png') center no-repeat;
+        background: url('img/big_canada.png') center no-repeat;
         background-size: 50%;
       }
   
@@ -48,11 +48,26 @@ MARCH18 = 1584507600000;
 
 //var active_series = ['ON', 'BC'];
 
-var series = {
+var total_series = {
+  'AB': ab_total,
+  'SK': sk_total,
+  'MB': mb_total,
+  'BC': bc_total,
+  'ON': on_total,
+  'QC': qc_total,
+  'PE': pe_total,
+  'NL': nl_total,
+  'NS': ns_total,
+  'NB': nb_total,
+}
+
+/*
+var relativeseries = {
+  'AB': ab_per_thousand,
   'ON': on_per_thousand,
   'BC': bc_per_thousand,
   'QC': qc_per_thousand,
-}
+}*/
 
 markings = [
   { color: "#000", lineWidth: 1, yaxis: { from: 2, to: 2 } },
@@ -64,7 +79,7 @@ plot_config = {
     max: '1587441600000',
   },
   yaxis: {
-    max: '0.1',
+    //max: '0.1',
   },
   grid: {
     borderColor: '#eee',
@@ -87,7 +102,7 @@ var redraw_graph = function() {
   for (var i=0; i < active_series.length; i++) {
     region_name = active_series[i];
 
-    plot_data.push({data: series[region_name], label: region_name});
+    plot_data.push({data: total_series[region_name], label: region_name});
   }
 
   $.plot("#graph", plot_data, plot_config);
@@ -131,9 +146,16 @@ $(document).ready(function() {
           <h3 class='text-center' >Cases per Thousand</h3>
           <span>Regions</span>
           <div class='btn-group'>
-            <button type='button' class='btn btn-primary series-button selected' id='ON'>ON</a>
+            <button type='button' class='btn btn-primary series-button selected' id='AB'>AB</a>
             <button type='button' class='btn btn-primary series-button selected' id='BC'>BC</a>
+            <button type='button' class='btn btn-primary series-button selected' id='SK'>SK</a>
+            <button type='button' class='btn btn-primary series-button selected' id='MB'>MB</a>
+            <button type='button' class='btn btn-primary series-button selected' id='ON'>ON</a>
             <button type='button' class='btn btn-primary series-button selected' id='QC'>QC</a>
+            <button type='button' class='btn btn-primary series-button selected' id='NB'>NB</a>
+            <button type='button' class='btn btn-primary series-button selected' id='PE'>PE</a>
+            <button type='button' class='btn btn-primary series-button selected' id='NS'>NS</a>
+            <button type='button' class='btn btn-primary series-button selected' id='NL'>NL</a>
           </div>
           <span>Series type</span>
           <div class="btn-group btn-group-toggle" data-toggle="buttons">
