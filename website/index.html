@@ -10,22 +10,46 @@
         height: 100%;
       }
 
-      #title-row {
-        height: 10%;
+      h1 {
+        text-align: center;
+      }
+
+      #meta-row {
+        height: 17%;
       }
 
       #graph-row {
-        height: 90%;
+        height: 75%;
+      }
+
+      #footer-row {
+        height: 8%;
       }
 
       #graph-container {
         background: url('img/big_canada.png') center no-repeat;
-        background-size: 50%;
+        background-size: 45%;
       }
   
       #graph { opacity: 0.9; }
 
       label.btn { cursor: pointer; }
+
+      div.legend {
+        width: 100px;
+        padding: 5px 10px;
+      }
+
+      .legend rect.background {
+        fill: rgba(0,0,0,0);
+      }
+
+      .legend {
+        width: 100px !important;
+        margin-left: auto !important;
+        display: block !important;
+        border: 1px solid #ccc;
+      }
     </style>
 
     <title>C-19 Ontario</title>
@@ -35,11 +59,34 @@
       integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
       crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script type='text/javascript' src='js/jquery.flot.js'></script>
-    <script type='text/javascript' src='js/jquery.flot.time.js'></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.canvaswrapper.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.colorhelpers.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.saturated.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.browser.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.drawSeries.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.uiConstants.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.logaxis.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.time.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.legend.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.flot.resize.js"></script>
+
     <script type='text/javascript' src='js/data.js'></script>
 
     <script type='text/javascript'>
+
+province_colours = {
+  'AB': '#e7c960',
+  'BC': '#b7dcf8',
+  'SK': '#d15f5f',
+  'MB': '#60b066',
+  'ON': '#9f55ec',
+  'QC': '#c4a552',
+  'NB': '#98b5cb',
+  'PE': '#ac5151',
+  'NS': '#529255',
+  'NL': '#84495d',
+};
 
 LINEWIDTH = 86400 * 50;
 
@@ -61,36 +108,52 @@ var total_series = {
   'NB': nb_total,
 }
 
-/*
-var relativeseries = {
+var per_thousand_series = {
   'AB': ab_per_thousand,
-  'ON': on_per_thousand,
+  'SK': sk_per_thousand,
+  'MB': mb_per_thousand,
   'BC': bc_per_thousand,
+  'ON': on_per_thousand,
   'QC': qc_per_thousand,
-}*/
+  'PE': pe_per_thousand,
+  'NL': nl_per_thousand,
+  'NS': ns_per_thousand,
+  'NB': nb_per_thousand,
+}
 
-markings = [
-  { color: "#000", lineWidth: 1, yaxis: { from: 2, to: 2 } },
-]
 
 plot_config = {
   xaxis: {
-    mode: 'time',
-    max: '1587441600000',
+    mode: "time",
+    min: (new Date(2020, 0, 22)).getTime(),
+    max: (new Date(2020, 3, 19)).getTime(),
+    timeBase: "milliseconds",
+    autoScale: "none",
   },
   yaxis: {
-    //max: '0.1',
+    font: '12px Arial',
+    mode: 'log',
   },
   grid: {
+    margin: {
+      left: 10,
+    },
     borderColor: '#eee',
     borderWidth: 1,
     hoverable: true,
     backgroundColor: '#fcfcfc',
-    markings: [
-      //{ yaxis: { from: 0.005, to: 0.01 }, color: "#000000" }
-      { xaxis: { from: MARCH16, to: MARCH16 + LINEWIDTH  }, color: "#000000" },
-      { xaxis: { from: MARCH18, to: MARCH18 + LINEWIDTH  }, color: "#000000" },
-    ]
+  },
+  series: {
+    lines: {
+      lineWidth: 3,
+    },
+  },
+  legend: {
+    show: true,
+    labelFormatter: function(label, series) {
+        // series is the series object for the label
+        return '<a href="#' + label + '">' + label + '</a>';
+    }
   },
 }
 
@@ -102,14 +165,36 @@ var redraw_graph = function() {
   for (var i=0; i < active_series.length; i++) {
     region_name = active_series[i];
 
-    plot_data.push({data: total_series[region_name], label: region_name});
+    if ($('#thousand')[0].checked == true) {
+      console.log('thousand');
+      plot_data.push({
+        data: per_thousand_series[region_name],
+        label: region_name,
+        color: province_colours[region_name],
+      });
+    } else {
+      console.log('not thousand');
+      plot_data.push({
+        data: total_series[region_name],
+        label: region_name,
+        color: province_colours[region_name],
+      });
+    }
+  }
+
+  if ($('#log')[0].checked == true) {
+    console.log('adding log');
+    plot_config['yaxis']['mode'] = "log";
+  } else {
+    console.log('not adding log');
+    plot_config['yaxis']['mode'] = null;
   }
 
   $.plot("#graph", plot_data, plot_config);
 }
 
 var get_active_series = function() {
-  selected_series_buttons = $('button.series-button.selected');
+  selected_series_buttons = $('button.region-series-button.selected');
   selected_series = [];
 
   for(var i=0; i< selected_series_buttons.length; i++) {
@@ -122,49 +207,94 @@ var get_active_series = function() {
 $(document).ready(function() {
   redraw_graph();
 
-  $('button.series-button').click(function() {
-    if ($(this).hasClass('selected')) { 
+  $('.region-series-button').click(function() {
+    if ($(this).hasClass('selected')) {
       $(this).removeClass('selected');
-      $(this).removeClass('btn-primary');
-      $(this).addClass('btn-outline-primary');
+      $(this).removeClass('btn-secondary');
+      $(this).addClass('btn-outline-secondary');
     } else {
       $(this).addClass('selected');
-      $(this).removeClass('btn-outline-primary');
-      $(this).addClass('btn-primary');
+      $(this).removeClass('btn-outline-secondary');
+      $(this).addClass('btn-secondary');
     }
 
     redraw_graph();
   });
+
+  $('.series-type-selector').change(function () { redraw_graph(); });
 });
 
     </script>
   </head>
   <body class='d-flex flex-column'>
-    <div class='container-fluid p-5 flex-grow-1'>
-      <div id='title-row' class='row'>
+    <div class='container-fluid px-5 py-3 flex-grow-1'>
+      <div id='meta-row' class='row'>
         <div class='col'>
-          <h3 class='text-center' >Cases per Thousand</h3>
-          <span>Regions</span>
-          <div class='btn-group'>
-            <button type='button' class='btn btn-primary series-button selected' id='AB'>AB</a>
-            <button type='button' class='btn btn-primary series-button selected' id='BC'>BC</a>
-            <button type='button' class='btn btn-primary series-button selected' id='SK'>SK</a>
-            <button type='button' class='btn btn-primary series-button selected' id='MB'>MB</a>
-            <button type='button' class='btn btn-primary series-button selected' id='ON'>ON</a>
-            <button type='button' class='btn btn-primary series-button selected' id='QC'>QC</a>
-            <button type='button' class='btn btn-primary series-button selected' id='NB'>NB</a>
-            <button type='button' class='btn btn-primary series-button selected' id='PE'>PE</a>
-            <button type='button' class='btn btn-primary series-button selected' id='NS'>NS</a>
-            <button type='button' class='btn btn-primary series-button selected' id='NL'>NL</a>
+          <div id='title-row' class='row'>
+            <div class='col'>
+              <h1>Covid-19 Canada Charts</h1>
+            </div>
           </div>
-          <span>Series type</span>
-          <div class="btn-group btn-group-toggle" data-toggle="buttons">
-            <label class="btn btn-primary active">
-              <input type="radio" name="options" id="total" class='series-type-selector' autocomplete="off" checked>Total Cases
-            </label>
-            <label class="btn btn-primary">
-              <input type="radio" name="options" id="thousand" autocomplete="off" class='series-type-selector'>Cases per-thousand
-            </label>
+          <div id='control-row' class='row'>
+            <div class='col-5'>
+              <div class='row'>
+                <div class='col'>
+                  <p class='mb-1'>Toggle Provinces</p>
+                </div>
+              </div>
+              <div class='row'>
+                <div class='col'>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='AB'>AB</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='BC'>BC</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='SK'>SK</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='MB'>MB</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='ON'>ON</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='QC'>QC</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='NB'>NB</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='PE'>PE</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='NS'>NS</a>
+                  <button type='button' class='btn btn-sm btn-secondary region-series-button selected mr-1' id='NL'>NL</a>
+                </div>
+              </div>
+            </div>
+            <div class='col-3 text-center'>
+              <div class='row'>
+                <div class='col'>
+                  <p class='mb-1'>Toggle Scale</p>
+                </div>
+              </div>
+              <div class='row'>
+                <div class='col'>
+                  <div id='scale-toggles' class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label id='log-label' class="btn btn-sm btn-outline-secondary active">
+                      <input type="radio" name="options" id="raw" class='series-type-selector' autocomplete="off" checked>Raw
+                    </label>
+                    <label id='raw-label' class="btn btn-sm btn-outline-secondary">
+                      <input type="radio" name="options" id="log" autocomplete="off" class='series-type-selector'>Log
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class='col-4 text-right'>
+              <div class='row'>
+                <div class='col'>
+                  <p class='mb-1'>Toggle Series type</p>
+                </div>
+              </div>
+              <div class='row'>
+                <div class='col'>
+                  <div id='series-toggle' class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label id='total-label' class="btn btn-sm btn-outline-secondary active">
+                      <input type="radio" name="options2" id="total" class='series-type-selector' autocomplete="off" checked>Total Confirmed
+                    </label>
+                    <label id='thousand-label' class="btn btn-sm btn-outline-secondary">
+                      <input type="radio" name="options2" id="thousand" autocomplete="off" class='series-type-selector'>Confirmed per 1000 population
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -172,6 +302,12 @@ $(document).ready(function() {
         <div id='graph-container' class='col d-flex flex-grow-1'>
           <div id='graph' class='flex-grow-1'>
           </div>
+        </div>
+      </div>
+      <div id='footer-row' class='row'>
+        <div class='col text-center'>
+          <p class='mt-3'>Data from <a href='https://github.com/CSSEGISandData/COVID-19'>Johns Hopkins</a>. Follow us on <a href='#'>Twitter</a> for daily updates. Code on <a href='#'>Github</a>.<br/>Contributions welcome! I'd like to expand this page and there is lots to do.
+          </p>
         </div>
       </div>
     </div>
