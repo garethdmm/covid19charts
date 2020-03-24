@@ -9,7 +9,7 @@ So I made a simple page with line-graphs of the number of confirmed cases of the
 
 ## Future Improvements
 
-I'm planning to expand this page as I find time. If you'd like to help, please reach out through twitter or at the email in my bio. Here's some future expansions
+I'm planning to expand this page as I find time. If you'd like to help, please reach out through [twitter](https://twitter.com/c19graphs) or at the email in my bio. Here's some future expansions
 
 - Bar chart of daily new cases in each area
 - Exponential trendlines for each series
