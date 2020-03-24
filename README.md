@@ -1,6 +1,8 @@
 # covid19charts
 Simple visualizations of the regional effects of the pandemic.
 
+![alttext](website/img/screenshot.png)
+
 There are a few excellent dashboards out there tracking the global effect of Covid-19, but I've still found it hard to understand what exactly is happening with the virus near me, particularly: how fast it is growing, and how my location (Ontario) compares to others. 
 
 So I made a simple page with line-graphs of the number of confirmed cases of the virus, toggle-able between total cases/cases-per-thousand-population, and log/simple y-axis to compare growth rates.
