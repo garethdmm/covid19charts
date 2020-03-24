@@ -121,7 +121,6 @@ var per_thousand_series = {
   'NB': nb_per_thousand,
 }
 
-
 plot_config = {
   xaxis: {
     mode: "time",
@@ -132,7 +131,7 @@ plot_config = {
   },
   yaxis: {
     font: '12px Arial',
-    mode: 'log',
+    mode: 'null',
   },
   grid: {
     margin: {
@@ -166,14 +165,12 @@ var redraw_graph = function() {
     region_name = active_series[i];
 
     if ($('#thousand')[0].checked == true) {
-      console.log('thousand');
       plot_data.push({
         data: per_thousand_series[region_name],
         label: region_name,
         color: province_colours[region_name],
       });
     } else {
-      console.log('not thousand');
       plot_data.push({
         data: total_series[region_name],
         label: region_name,
