@@ -14,5 +14,6 @@ I'm planning to expand this page as I find time. If you'd like to help, please r
 - Bar chart of daily new cases in each area
 - Exponential trendlines for each series
 - Expanding to cover US states and other regions
+- City-level data
 - Tracking when lockdowns went into effect & examining the effect on the growth rate
 - ...lots of other ideas
