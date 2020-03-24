@@ -195,6 +195,8 @@ var redraw_graph = function() {
   }
 
   plot = $.plot("#graph", plot_data, plot_config);
+  
+  safari_setup_hack();
 }
 
 var get_active_series = function() {
@@ -232,7 +234,6 @@ $(document).ready(function() {
   $('.series-type-selector').change(function () { redraw_graph(); });
 
   redraw_graph();
-  safari_setup_hack();
 });
 
     </script>
