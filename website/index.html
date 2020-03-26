@@ -91,6 +91,13 @@
 
     <script type='text/javascript'>
 
+var is_opera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+var is_Edge = navigator.userAgent.indexOf("Edge") > -1;
+var is_chrome = !!window.chrome && !is_opera && !is_Edge;
+var is_explorer= typeof document !== 'undefined' && !!document.documentMode && !is_Edge;
+var is_firefox = typeof window.InstallTrigger !== 'undefined';
+var is_safari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 var plot = null;
 
 province_colours = {
@@ -208,8 +215,10 @@ var redraw_graph = function() {
   }
 
   plot = $.plot("#graph", plot_data, plot_config);
-  
-  safari_setup_hack();
+
+  if (is_safari) {
+    safari_setup_hack();
+  }
 }
 
 var get_active_series = function() {
